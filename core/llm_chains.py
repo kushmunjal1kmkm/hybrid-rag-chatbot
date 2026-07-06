@@ -60,23 +60,6 @@ def build_llm(
             temperature=temperature,
             streaming=streaming,
         )
-    elif provider == "openai":
-        from langchain_openai import ChatOpenAI
-        return ChatOpenAI(
-            model=model_id,
-            openai_api_key=api_key,
-            temperature=temperature,
-            streaming=streaming,
-        )
-    elif provider == "anthropic":
-        from langchain_anthropic import ChatAnthropic
-        return ChatAnthropic(
-            model=model_id,
-            anthropic_api_key=api_key,
-            temperature=temperature,
-            streaming=streaming,
-        )
-    else:
         raise ValueError(f"Unknown provider: {provider!r}")
 
 
@@ -171,12 +154,13 @@ def build_agent(llm, tools: list, system_prompt: str):
     Returns a compiled graph that accepts:
       {"messages": [...]} and streams/invokes like a Runnable.
     """
-    from langgraph.prebuilt import create_react_agent
+    # from langgraph.prebuilt import create_react_agent
+    from langchain.agents import create_agent
 
-    agent = create_react_agent(
+    agent = create_agent(
         model=llm,
         tools=tools,
-        prompt=system_prompt,
+        # prompt=system_prompt,
     )
     return agent
 
@@ -196,9 +180,9 @@ def invoke_agent(agent, user_input: str, history_messages: list, system_prompt: 
       - "output": str        — final assistant text
       - "tool_calls": list   — list of (tool_name, tool_input) tuples
     """
-    from langchain_core.messages import SystemMessage, HumanMessage, AIMessage, ToolMessage
+    from langchain_core.messages import SystemMessage, HumanMessage, AIMessage, ToolMessage, BaseMessage
 
-    messages = [SystemMessage(content=system_prompt)]
+    messages :list[BaseMessage] = [SystemMessage(content=system_prompt)]
     messages.extend(history_messages)
     messages.append(HumanMessage(content=user_input))
 
